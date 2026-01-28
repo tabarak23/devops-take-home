@@ -1,5 +1,4 @@
 common: &default_settings
-  
   app_name: devops-take-home
   agent_enabled: true
   log_level: info
@@ -7,4 +6,3 @@ common: &default_settings
 
 production:
   <<: *default_settings
-
