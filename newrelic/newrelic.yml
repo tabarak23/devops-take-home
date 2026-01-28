@@ -1,18 +1,4 @@
 common: &default_settings
-
-  # ============================== LICENSE KEY ===============================
-  # LEAVE BLANK. We are passing this via AWS Secrets Manager -> ECS Environment Variable
-  # license_key: '' 
-
-  # Agent Enabled
-  agent_enabled: true
-
-  # Set the name of your application. 
-  # Note: The NEW_RELIC_APP_NAME environment variable will override this.
-  app_name: 'mal-exercise-app'
-
-  # Provides the ability to forward application logs to New Relic
-  application_logging:
-    enabled: true
-    forwarding:
-      enabled: true # This sends your Spring Boot logs directly to New Relic!
+  license_key: <%= ENV['NEW_RELIC_LICENSE_KEY'] %>
+  app_name: <%= ENV['NEW_RELIC_APP_NAME'] %>
+  log_level: info
