@@ -18,6 +18,12 @@ variable "image" {
   type        = string
 }
 
+variable "newrelic_secret_arn" {
+  type        = string
+  description = "ARN of New Relic license key secret"
+}
+
+
 variable "cpu" {
   description = "CPU units for the ECS task"
   type        = number
@@ -71,3 +77,4 @@ variable "ecs_security_group_id" {
   description = "Security group ID for ECS service"
   type        = string
 }
+

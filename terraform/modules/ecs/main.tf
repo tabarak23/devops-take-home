@@ -54,16 +54,24 @@ resource "aws_ecs_task_definition" "main" {
           containerPort = var.container_port
         }
       ]
+
       environment = [
-      {
-        name  = "NEW_RELIC_APP_NAME"
-        value = "${var.project_name}-${var.stage}"
-      },
-      {
-        name  = "NEW_RELIC_ENABLED"
-        value = "true"
-      }
-    ]
+        {
+          name  = "NEW_RELIC_APP_NAME"
+          value = "${var.project_name}-${var.stage}"
+        },
+        {
+          name  = "NEW_RELIC_ENABLED"
+          value = "true"
+        }
+      ]
+
+      secrets = [
+        {
+          name      = "NEW_RELIC_LICENSE_KEY"
+          valueFrom = var.newrelic_secret_arn
+        }
+      ]
 
       logConfiguration = {
         logDriver = "awslogs"
@@ -76,6 +84,7 @@ resource "aws_ecs_task_definition" "main" {
     }
   ])
 }
+
 
 # =========================
 # ECS Service
@@ -109,3 +118,4 @@ resource "aws_ecs_service" "main" {
     local.common_tags
   )
 }
+

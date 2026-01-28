@@ -105,6 +105,8 @@ module "ecs" {
   target_group_arn       = module.alb.target_group_arn
   private_subnet_ids     = module.vpc.private_subnet_ids
   ecs_security_group_id  = aws_security_group.ecs.id
+  newrelic_secret_arn    = var.newrelic_secret_arn
+
 }
 
 # =========================

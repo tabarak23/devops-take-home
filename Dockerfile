@@ -20,19 +20,16 @@ COPY src ./src
 RUN --mount=type=cache,target=/root/.m2 \
     mvn clean package -DskipTests
 
-RUN apt-get update && apt-get install -y unzip && rm -rf /var/lib/apt/lists/*
 
 
-RUN curl -L https://download.newrelic.com/newrelic/java-agent/newrelic-agent/current/newrelic-java.zip \
-  -o /tmp/newrelic.zip && \
-  unzip /tmp/newrelic.zip -d /app && \
-  rm /tmp/newrelic.zip    
+
 # last stage
 #lightweight jre image to run the app
 #could have used distrolesss but health check would break coz it doesnt support shell annd pacakage managers
 #alpine reduces image size and still supports shell commands
 FROM eclipse-temurin:17-jre-alpine 
 
+RUN apk add --no-cache unzip wget curl
 
 #creating non root user for security 
 RUN addgroup -S tabarak && adduser -S tabarak -G tabarak
@@ -41,12 +38,15 @@ RUN addgroup -S tabarak && adduser -S tabarak -G tabarak
 #switching to non root user
 USER tabarak
 WORKDIR /app
-
+RUN curl -L https://download.newrelic.com/newrelic/java-agent/newrelic-agent/current/newrelic-java.zip \
+  -o /tmp/newrelic.zip && \
+  unzip /tmp/newrelic.zip -d /app && \
+  rm /tmp/newrelic.zip    
+COPY newrelic/newrelic.yml /app/newrelic/newrelic.yml
 
 #copying alreadu built jar file from foundation stage
 #keeps run time image small
 COPY --from=foundation /app/target/*.jar mal_ai.jar
-COPY --from=foundation /app/newrelic /app/newrelic
 
 
 #expose app port
@@ -59,4 +59,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=20s \
 
 
 #strating the app
-ENTRYPOINT ["java","-javaagent:/app/newrelic/newrelic.jar","-Dnewrelic.config.agent_enabled=true","-jar","mal_ai.jar"]
+CMD ["java", "-javaagent:/app/newrelic/newrelic.jar", "-jar", "mal_ai.jar"]
+

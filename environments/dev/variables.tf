@@ -22,3 +22,9 @@ variable "image" {
   description = "Docker image to use"
   type        = string
 }
+
+variable "newrelic_secret_arn" {
+  type        = string
+  description = "ARN of New Relic license key secret"
+}
+
