@@ -19,20 +19,17 @@ RUN apt-get update && apt-get install -y \
 # 2. Create non-root user
 RUN groupadd -r appgroup && useradd -r -g appgroup -u 1001 appuser
 
-# 3. New Relic Integration (Optimized)
-# Create the log directory as root first
-RUN mkdir -p /app/newrelic/logs
+# 3. New Relic Integration
+RUN mkdir -p /app/newrelic/logs && chown -R appuser:appgroup /app/newrelic
 
-# Download agent and config directly with the correct ownership
+# ONLY download the JAR. We will skip the .yml file.
 ADD --chown=appuser:appgroup https://download.newrelic.com/newrelic/java-agent/newrelic-agent/current/newrelic.jar /app/newrelic/newrelic.jar
-COPY --chown=appuser:appgroup newrelic.yml /app/newrelic/newrelic.yml
+
 # 4. Copy Application JAR
 COPY --from=build --chown=appuser:appgroup /app/target/*.jar /app/app.jar
 
-# 5. Final Permission Fix 
-# This ensures every folder in the path is traversable and writable by appuser
-RUN chown -R appuser:appgroup /app && \
-    chmod -R 755 /app/newrelic
+# 5. Permissions
+RUN chmod -R 755 /app/newrelic
 
 # 6. Health Check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
@@ -41,5 +38,12 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
 # 7. Security: Switch to non-root
 USER 1001
 
-# 8. Start Application (using Shell form for variable expansion)
-ENTRYPOINT ["sh", "-c", "java -javaagent:/app/newrelic/newrelic.jar -Dnewrelic.config.license_key=${NEW_RELIC_LICENSE_KEY} -Dnewrelic.config.app_name=${NEW_RELIC_APP_NAME} -jar app.jar"]
+# 8. Start Application
+# We pass ALL required New Relic settings as Java System Properties (-D)
+# This bypasses the need for a newrelic.yml file entirely.
+ENTRYPOINT ["sh", "-c", "java \
+    -javaagent:/app/newrelic/newrelic.jar \
+    -Dnewrelic.config.license_key=${NEW_RELIC_LICENSE_KEY} \
+    -Dnewrelic.config.app_name=${NEW_RELIC_APP_NAME} \
+    -Dnewrelic.config.log_file_path=/app/newrelic/logs \
+    -jar app.jar"]
