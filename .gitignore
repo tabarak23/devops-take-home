@@ -1,0 +1,18 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# Terraform variables
+*.tfvars
+
+# Build artifacts
+target/
+*.jar
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+

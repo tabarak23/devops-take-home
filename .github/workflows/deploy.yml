@@ -1,0 +1,191 @@
+name: CI/CD – Java App to ECS Fargate
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: us-west-1
+  JAVA_VERSION: '17'
+
+  # Deterministic naming inputs (must match Terraform)
+  PROJECT_NAME: mal-exercise
+  STAGE: dev
+
+  # Docker / ECR
+  ECR_REPOSITORY: mal-exercise-dev
+
+# --------------------------------------------------
+# 1️⃣ BUILD & TEST (PR + MAIN)
+# --------------------------------------------------
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+
+      - name: Build and run unit tests
+        run: mvn clean test package
+
+      - name: Build Docker image
+        run: |
+          IMAGE_NAME=${PROJECT_NAME}
+          docker build -t $IMAGE_NAME:${{ github.sha }} .
+          docker tag $IMAGE_NAME:${{ github.sha }} $IMAGE_NAME:latest
+
+# --------------------------------------------------
+# 2️⃣ PUSH IMAGE TO ECR (MAIN ONLY)
+# --------------------------------------------------
+  push-image:
+    name: Push Docker Image to ECR
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region $AWS_REGION \
+            | docker login --username AWS --password-stdin \
+              ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
+      - name: Build Docker image (for push)
+        run: |
+          IMAGE_NAME=${PROJECT_NAME}
+          docker build -t $IMAGE_NAME:${{ github.sha }} .
+
+      - name: Push Docker image
+        run: |
+          IMAGE_NAME=${PROJECT_NAME}
+          ECR_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY
+
+          docker tag $IMAGE_NAME:${{ github.sha }} $ECR_URI:${{ github.sha }}
+          docker tag $IMAGE_NAME:${{ github.sha }} $ECR_URI:latest
+
+          docker push $ECR_URI:${{ github.sha }}
+          docker push $ECR_URI:latest
+
+# --------------------------------------------------
+# 3️⃣ DEPLOY TO DEV (AUTO)
+# --------------------------------------------------
+  deploy-dev:
+    name: Deploy to ECS (Dev)
+    needs: push-image
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to ECS (Dev)
+        run: |
+          ECS_CLUSTER="${PROJECT_NAME}-${STAGE}-cluster"
+          ECS_SERVICE="${PROJECT_NAME}-${STAGE}-service"
+
+          aws ecs update-service \
+            --cluster $ECS_CLUSTER \
+            --service $ECS_SERVICE \
+            --force-new-deployment
+
+      - name: Wait for ECS service stability
+        run: |
+          ECS_CLUSTER="${PROJECT_NAME}-${STAGE}-cluster"
+          ECS_SERVICE="${PROJECT_NAME}-${STAGE}-service"
+
+          aws ecs wait services-stable \
+            --cluster $ECS_CLUSTER \
+            --services $ECS_SERVICE
+
+      - name: Verify application health (Dev)
+        run: |
+          ALB_NAME="${PROJECT_NAME}-${STAGE}-alb"
+
+          ALB_DNS=$(aws elbv2 describe-load-balancers \
+            --names $ALB_NAME \
+            --query "LoadBalancers[0].DNSName" \
+            --output text)
+
+          echo "Checking health endpoint at http://$ALB_DNS/health"
+          curl -f http://$ALB_DNS/health
+
+# --------------------------------------------------
+# 4️⃣ DEPLOY TO PROD (MANUAL APPROVAL)
+# --------------------------------------------------
+  deploy-prod:
+    name: Deploy to ECS (Production)
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    environment: prod   
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to ECS (Prod)
+        run: |
+          STAGE=prod
+          ECS_CLUSTER="${PROJECT_NAME}-${STAGE}-cluster"
+          ECS_SERVICE="${PROJECT_NAME}-${STAGE}-service"
+
+          aws ecs update-service \
+            --cluster $ECS_CLUSTER \
+            --service $ECS_SERVICE \
+            --force-new-deployment
+
+      - name: Wait for ECS service stability
+        run: |
+          STAGE=prod
+          ECS_CLUSTER="${PROJECT_NAME}-${STAGE}-cluster"
+          ECS_SERVICE="${PROJECT_NAME}-${STAGE}-service"
+
+          aws ecs wait services-stable \
+            --cluster $ECS_CLUSTER \
+            --services $ECS_SERVICE
+
+      - name: Verify application health (Prod)
+        run: |
+          STAGE=prod
+          ALB_NAME="${PROJECT_NAME}-${STAGE}-alb"
+
+          ALB_DNS=$(aws elbv2 describe-load-balancers \
+            --names $ALB_NAME \
+            --query "LoadBalancers[0].DNSName" \
+            --output text)
+
+          echo "Checking production health endpoint"
+          curl -f http://$ALB_DNS/health
