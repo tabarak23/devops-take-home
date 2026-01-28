@@ -23,12 +23,16 @@ RUN groupadd -r appgroup && useradd -r -g appgroup -u 1001 appuser
 
 # 3. New Relic Integration
 # Download the agent and create a logs directory with correct permissions
+# 3. New Relic Integration
 RUN mkdir -p /app/newrelic/logs && \
     chown -R appuser:appgroup /app/newrelic
-    
-ADD https://download.newrelic.com/newrelic/java-agent/newrelic-agent/current/newrelic.jar /app/newrelic/newrelic.jar
-# Note: You can also COPY a custom newrelic.yml if you have specific local configs
-ADD https://download.newrelic.com/newrelic/java-agent/newrelic-agent/current/newrelic.yml /app/newrelic/newrelic.yml
+
+# Use --chown so the files belong to your appuser from the start
+ADD --chown=appuser:appgroup https://download.newrelic.com/newrelic/java-agent/newrelic-agent/current/newrelic.jar /app/newrelic/newrelic.jar
+ADD --chown=appuser:appgroup https://download.newrelic.com/newrelic/java-agent/newrelic-agent/current/newrelic.yml /app/newrelic/newrelic.yml
+
+# Explicitly grant read permissions just in case
+RUN chmod 644 /app/newrelic/newrelic.jar /app/newrelic/newrelic.yml
 
 # 4. Copy the JAR from the build stage
 COPY --from=build /app/target/*.jar app.jar
