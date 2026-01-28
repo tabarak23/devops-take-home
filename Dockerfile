@@ -24,7 +24,7 @@ RUN groupadd -r appgroup && useradd -r -g appgroup -u 1001 appuser
 # 3. New Relic Integration
 # Download the agent and create a logs directory with correct permissions
 RUN mkdir -p /app/newrelic/logs && \
-    chown -r appuser:appgroup /app/newrelic
+    chown -R appuser:appgroup /app/newrelic
     
 ADD https://download.newrelic.com/newrelic/java-agent/newrelic-agent/current/newrelic.jar /app/newrelic/newrelic.jar
 # Note: You can also COPY a custom newrelic.yml if you have specific local configs
