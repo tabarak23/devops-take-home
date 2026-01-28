@@ -5,7 +5,9 @@ Overview
 
 ```text
 devops-take-home/
-├── Dockerfile              # Multi-stage build for Java/NewRelic
+
+├── Docker                  #Docker folder
+    ├──Dockerfile           # Multi-stage build for Java/NewRelic
 ├── pom.xml                 # Maven project dependencies/config
 ├── newrelic/               # NR Agent binaries and config
 │   ├── newrelic.jar        # The agent library for JVM
@@ -94,27 +96,41 @@ Pushes image to ECR.
 Updates the ECS Task Definition and triggers a rolling deployment.
 
 Verifies health via the ALB endpoint.
+<img width="1500" height="246" alt="Screenshot from 2026-01-28 09-00-14" src="https://github.com/user-attachments/assets/d5d2a9a7-3666-4922-b56e-eeafa66cfa10" />
 
-5. Monitoring & Observability
+5. Monitoring & Observability setup
 New Relic Setup
-APM: View JVM metrics, transaction traces, and error rates in the New Relic UI.
+<img width="1849" height="961" alt="Screenshot from 2026-01-28 10-29-13" src="https://github.com/user-attachments/assets/d595fef7-9848-4ba1-9a1e-baa87f4c46dc" />
+<img width="1849" height="961" alt="Screenshot from 2026-01-28 10-28-48" src="https://github.com/user-attachments/assets/aa943c7f-2179-4616-aa2f-64b891611e55" />
+<img width="1859" height="749" alt="Screenshot from 2026-01-28 10-28-31" src="https://github.com/user-attachments/assets/5acd7a1c-f3cc-4983-a753-76410c656fea" />
+<img width="1228" height="961" alt="Screenshot from 2026-01-28 17-01-44" src="https://github.com/user-attachments/assets/eeab1528-255b-4459-925b-c46b8c4cc504" />
+<img width="620" height="961" alt="Screenshot from 2026-01-28 17-01-27" src="https://github.com/user-attachments/assets/23a02a82-9c2a-48ba-b829-1029a2fec99c" />
+<img width="439" height="961" alt="Screenshot from 2026-01-28 17-01-15" src="https://github.com/user-attachments/assets/0a3780d7-ef0d-4bf4-914b-91203cd22595" />
 
-Dashboards: Created a custom dashboard tracking Request Latency vs. CPU Usage.
+<img width="458" height="961" alt="Screenshot from 2026-01-28 17-04-41" src="https://github.com/user-attachments/assets/d0f627c3-fe78-4895-90f0-922392c9352f" />
+<img width="1538" height="961" alt="Screenshot from 2026-01-28 17-04-32" src="https://github.com/user-attachments/assets/83829f4f-ee39-4b42-a1e4-a0c2f90dc1d5" />
+<img width="908" height="961" alt="Screenshot from 2026-01-28 17-04-20" src="https://github.com/user-attachments/assets/fa32c181-aeb3-496e-971d-2a09ff814bf7" />
+<img width="908" height="961" alt="Screenshot from 2026-01-28 17-04-12" src="https://github.com/user-attachments/assets/c8423a52-7e49-44d1-b901-1e6ebcd41e1b" />
+<img width="908" height="961" alt="Screenshot from 2026-01-28 17-02-18" src="https://github.com/user-attachments/assets/ef88dc7d-56ae-4168-8099-79324433d64e" />
+<img width="525" height="961" alt="Screenshot from 2026-01-28 17-02-06" src="https://github.com/user-attachments/assets/8cbb4b10-a57f-4fa5-98e8-edeba5bb4d1b" />
+<img width="1699" height="961" alt="Screenshot from 2026-01-28 17-05-46" src="https://github.com/user-attachments/assets/bdf83756-e7e1-48ba-bb8c-7f2b3a044b00" />
+<img width="1699" height="961" alt="Screenshot from 2026-01-28 17-05-30" src="https://github.com/user-attachments/assets/a3035e2c-3360-4608-82d8-902073a413ec" />
 
-Alerting: Configured NRQL alerts for:
 
-CPU > 80%
-
-Heap Memory > 80%
-
-Apdex score < 0.5
+<img width="1377" height="689" alt="Screenshot from 2026-01-28 17-06-47" src="https://github.com/user-attachments/assets/9eb55e29-ca80-4382-964f-c49f1b68faab" />
 
 Logging
 Logs are streamed to CloudWatch under the group /ecs/java-app.
 
 Retention: 7 days (configured in terraform/modules/logs).
 
+SUCCESS
+<img width="1364" height="667" alt="Screenshot from 2026-01-28 02-42-40" src="https://github.com/user-attachments/assets/9ad5fb3d-d8fe-4f24-9ed3-84f07019c6d6" />
+<img width="1701" height="624" alt="Screenshot from 2026-01-28 09-16-21" src="https://github.com/user-attachments/assets/4784a73d-4a69-4798-bd68-9e225ac7f20c" />
+<img width="1649" height="302" alt="Screenshot from 2026-01-28 09-16-07" src="https://github.com/user-attachments/assets/29c17c2e-e2f4-442a-b776-b026d84f2643" />
+<img width="1500" height="246" alt="Screenshot from 2026-01-28 09-01-14" src="https://github.com/user-attachments/assets/f2038cee-4b87-4011-bf5f-fc9d4da59ce2" />
+
+
+
 6. Troubleshooting
 Health Checks failing? Ensure the /health endpoint in Restapi.java returns a 200 OK and matches the ALB health check path.
-
-Terraform State: State is currently local for this exercise. In a production environment, use an S3 backend with DynamoDB locking.
