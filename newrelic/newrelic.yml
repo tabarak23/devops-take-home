@@ -1,9 +1,10 @@
-icommon: &default_settings
+common: &default_settings
   license_key: ${NEW_RELIC_LICENSE_KEY}
   app_name: devops-take-home
+  agent_enabled: true
+  log_level: info
   distributed_tracing:
     enabled: true
-  log_level: info
 
 production:
   <<: *default_settings
