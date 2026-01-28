@@ -119,6 +119,9 @@ New Relic Setup
 
 <img width="1377" height="689" alt="Screenshot from 2026-01-28 17-06-47" src="https://github.com/user-attachments/assets/9eb55e29-ca80-4382-964f-c49f1b68faab" />
 
+
+![alt text](<Screenshot from 2026-01-28 17-06-47.png>)
+
 Logging
 Logs are streamed to CloudWatch under the group /ecs/java-app.
 
