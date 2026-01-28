@@ -59,12 +59,8 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=20s \
 
 
 #strating the app
-CMD [
-  "java",
-  "-javaagent:/app/newrelic/newrelic.jar",
-  "-Dnewrelic.environment=production",
-  "-Dnewrelic.config.license_key=${NEW_RELIC_LICENSE_KEY}",
-  "-jar",
-  "mal_ai.jar"
-]
-
+CMD java \
+  -javaagent:/app/newrelic/newrelic.jar \
+  -Dnewrelic.environment=production \
+  -Dnewrelic.config.license_key=$NEW_RELIC_LICENSE_KEY \
+  -jar mal_ai.jar
