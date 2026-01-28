@@ -81,7 +81,7 @@ resource "aws_ecs_task_definition" "main" {
       secrets = [
         {
           name      = "NEW_RELIC_LICENSE_KEY"
-          valueFrom = var.newrelic_secret_arn
+          valueFrom = "${var.newrelic_secret_arn}:NEW_RELIC_LICENSE_KEY::"
         }
       ]
 

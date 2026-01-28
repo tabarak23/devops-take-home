@@ -73,8 +73,14 @@ variable "private_subnet_ids" {
   type        = list(string)
 }
 
-variable "ecs_security_group_id" {
-  description = "Security group ID for ECS service"
+
+
+variable "vpc_id" {
   type        = string
+  description = "The VPC ID where the security group will be created"
 }
 
+variable "alb_security_group_id" {
+  type        = string
+  description = "The security group ID of the Load Balancer"
+}
