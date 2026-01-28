@@ -3,8 +3,7 @@ common: &default_settings
   app_name: devops-take-home
   agent_enabled: true
   log_level: info
-  distributed_tracing:
-    enabled: true
+  distributed_tracing.enabled: true
 
 production:
   <<: *default_settings
