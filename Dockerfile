@@ -42,8 +42,8 @@ RUN curl -L https://download.newrelic.com/newrelic/java-agent/newrelic-agent/cur
   -o /tmp/newrelic.zip && \
   unzip /tmp/newrelic.zip -d /app && \
   rm /tmp/newrelic.zip    
-COPY newrelic/newrelic.jar /app/newrelic/newrelic.jar
-COPY newrelic/newrelic.yml /app/newrelic/newrelic.yml
+ADD newrelic/newrelic.jar /app/newrelic/newrelic.jar
+ADD newrelic/newrelic.yml /app/newrelic/newrelic.yml
 
 #copying alreadu built jar file from foundation stage
 #keeps run time image small
