@@ -1,5 +1,30 @@
 DevOps Take-Home: Java API on AWS Fargate
 Overview
+
+Repositroy structure
+devops-take-home/
+├── Dockerfile              # Multi-stage build for Java/NewRelic
+├── pom.xml                 # Maven project dependencies/config
+├── newrelic/               # NR Agent binaries and config
+│   ├── newrelic.jar        # The agent library for JVM
+│   └── newrelic.yml        # Agent settings and app name
+├── src/                    # Java Spring Boot source code
+│   └── main/java/...       # Health check API controller logic
+├── environments/           # Environment-specific TF configurations
+│   ├── dev/                # Development variables and state files
+│   ├── staging/            # Staging environment config files
+│   └── prod/               # Production environment config files
+├── terraform/              # Reusable Infrastructure modules
+│   └── modules/
+│       ├── vpc/            # Networking: Subnets, NAT, IGW
+│       ├── alb/            # Load Balancer and target groups
+│       ├── ecs/            # Cluster and Fargate task definitions
+│       ├── ecr/            # Private Docker registry for images
+│       ├── iam/            # Task and Execution security roles
+│       ├── logs/           # CloudWatch Log groups/retention
+│       └── autoscaling/    # CPU/Memory based scaling policies
+└── .github/workflows/      # CI/CD automation pipelines (YAML)
+
 This repository contains the Infrastructure as Code (Terraform), Containerization (Docker), and CI/CD (GitHub Actions) logic to deploy a Spring Boot Java application to AWS Fargate.
 
 Infrastructure Components
