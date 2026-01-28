@@ -38,9 +38,11 @@ USER 1001
 # 8. Start Application
 # We pass the license key and app name as system properties.
 # This works perfectly even without a newrelic.yml file.
-ENTRYPOINT ["sh", "-c", "CLEAN_KEY=$(echo $NEW_RELIC_LICENSE_KEY | tr -d '\"{}') && \
-            CLEAN_NAME=$(echo $NEW_RELIC_APP_NAME | tr -d '\"{}') && \
-            java -javaagent:/app/newrelic/newrelic.jar \
-            -Dnewrelic.config.license_key=$CLEAN_KEY \
-            -Dnewrelic.config.app_name=$CLEAN_NAME \
-            -jar app.jar"]
+
+ENTRYPOINT ["sh", "-c", " \
+    CLEAN_KEY=$(echo $NEW_RELIC_LICENSE_KEY | sed -E 's/.*\"NEW_RELIC_LICENSE_KEY\":\"([^\"]+)\".*/\1/') && \
+    if [ \"$CLEAN_KEY\" = \"$NEW_RELIC_LICENSE_KEY\" ]; then CLEAN_KEY=$NEW_RELIC_LICENSE_KEY; fi && \
+    java -javaagent:/app/newrelic/newrelic.jar \
+    -Dnewrelic.config.license_key=$CLEAN_KEY \
+    -Dnewrelic.config.app_name=${NEW_RELIC_APP_NAME} \
+    -jar app.jar"]

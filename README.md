@@ -1,7 +1,9 @@
 DevOps Take-Home: Java API on AWS Fargate
 Overview
 
-Repositroy structure
+## Project Structure
+
+```text
 devops-take-home/
 ├── Dockerfile              # Multi-stage build for Java/NewRelic
 ├── pom.xml                 # Maven project dependencies/config
@@ -24,7 +26,6 @@ devops-take-home/
 │       ├── logs/           # CloudWatch Log groups/retention
 │       └── autoscaling/    # CPU/Memory based scaling policies
 └── .github/workflows/      # CI/CD automation pipelines (YAML)
-
 This repository contains the Infrastructure as Code (Terraform), Containerization (Docker), and CI/CD (GitHub Actions) logic to deploy a Spring Boot Java application to AWS Fargate.
 
 Infrastructure Components
