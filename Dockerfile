@@ -11,10 +11,7 @@ FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
 
 # 1. System dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y curl ca-certificates && rm -rf /var/lib/apt/lists/*
 
 # 2. Create non-root user
 RUN groupadd -r appgroup && useradd -r -g appgroup -u 1001 appuser
@@ -22,7 +19,7 @@ RUN groupadd -r appgroup && useradd -r -g appgroup -u 1001 appuser
 # 3. New Relic Integration
 RUN mkdir -p /app/newrelic/logs && chown -R appuser:appgroup /app/newrelic
 
-# ONLY download the JAR. We will skip the .yml file.
+# DOWNLOAD ONLY THE JAR. (DO NOT ADD THE .YML FILE)
 ADD --chown=appuser:appgroup https://download.newrelic.com/newrelic/java-agent/newrelic-agent/current/newrelic.jar /app/newrelic/newrelic.jar
 
 # 4. Copy Application JAR
@@ -39,11 +36,10 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
 USER 1001
 
 # 8. Start Application
-# We pass ALL required New Relic settings as Java System Properties (-D)
-# This bypasses the need for a newrelic.yml file entirely.
+# We pass the license key and app name as system properties.
+# This works perfectly even without a newrelic.yml file.
 ENTRYPOINT ["sh", "-c", "java \
     -javaagent:/app/newrelic/newrelic.jar \
     -Dnewrelic.config.license_key=${NEW_RELIC_LICENSE_KEY} \
     -Dnewrelic.config.app_name=${NEW_RELIC_APP_NAME} \
-    -Dnewrelic.config.log_file_path=/app/newrelic/logs \
     -jar app.jar"]
