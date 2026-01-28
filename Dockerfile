@@ -42,6 +42,7 @@ RUN curl -L https://download.newrelic.com/newrelic/java-agent/newrelic-agent/cur
   -o /tmp/newrelic.zip && \
   unzip /tmp/newrelic.zip -d /app && \
   rm /tmp/newrelic.zip    
+COPY newrelic/newrelic.jar /app/newrelic/newrelic.jar
 COPY newrelic/newrelic.yml /app/newrelic/newrelic.yml
 
 #copying alreadu built jar file from foundation stage
@@ -59,8 +60,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=20s \
 
 
 #strating the app
-CMD java \
-  -javaagent:/app/newrelic/newrelic.jar \
-  -Dnewrelic.environment=production \
-  -Dnewrelic.config.license_key=$NEW_RELIC_LICENSE_KEY \
-  -jar mal_ai.jar
+ENTRYPOINT ["java","-javaagent:/app/newrelic/newrelic.jar","-jar","/app/mal_ai.jar"]
