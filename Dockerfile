@@ -25,8 +25,7 @@ RUN mkdir -p /app/newrelic/logs
 
 # Download agent and config directly with the correct ownership
 ADD --chown=appuser:appgroup https://download.newrelic.com/newrelic/java-agent/newrelic-agent/current/newrelic.jar /app/newrelic/newrelic.jar
-ADD --chown=appuser:appgroup https://download.newrelic.com/newrelic/java-agent/newrelic-agent/current/newrelic.yml /app/newrelic/newrelic.yml
-
+COPY --chown=appuser:appgroup newrelic.yml /app/newrelic/newrelic.yml
 # 4. Copy Application JAR
 COPY --from=build --chown=appuser:appgroup /app/target/*.jar /app/app.jar
 
@@ -43,4 +42,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
 USER 1001
 
 # 8. Start Application (using Shell form for variable expansion)
-ENTRYPOINT ["sh", "-c", "java -javaagent:/app/newrelic/newrelic.jar -Dnewrelic.config.app_name=${NEW_RELIC_APP_NAME} -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "java -javaagent:/app/newrelic/newrelic.jar -Dnewrelic.config.license_key=${NEW_RELIC_LICENSE_KEY} -Dnewrelic.config.app_name=${NEW_RELIC_APP_NAME} -jar app.jar"]

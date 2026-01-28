@@ -1,4 +1,4 @@
 common: &default_settings
-  license_key: <%= ENV['NEW_RELIC_LICENSE_KEY'] %>
-  app_name: <%= ENV['NEW_RELIC_APP_NAME'] %>
+  license_key: <%= ENV.fetch("NEW_RELIC_LICENSE_KEY") %>
+  app_name: <%= ENV.fetch("NEW_RELIC_APP_NAME") %>
   log_level: info
